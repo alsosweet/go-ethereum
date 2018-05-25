@@ -101,7 +101,7 @@ func (set *unconfirmedBlocks) Shift(height uint64) {
 		case header == nil:
 			log.Warn("Failed to retrieve header of mined block", "number", next.index, "hash", next.hash)
 		case header.Hash() == next.hash:
-			log.Info("🔗 block reached canonical chain", "number", next.index, "hash", next.hash) //真正的插入区块链
+			log.Info("🔗 block reached canonical chain", "number", next.index, "hash", next.hash) //
 		default:
 			log.Info("⑂ block  became a side fork", "number", next.index, "hash", next.hash) //
 		}

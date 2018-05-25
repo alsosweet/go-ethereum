@@ -311,7 +311,7 @@ func (self *worker) wait() {
 			for _, log := range work.state.Logs() {
 				log.BlockHash = block.Hash()
 			}
-			stat, err := self.chain.WriteBlockWithState(block, work.receipts, work.state)
+			stat, err := self.chain.WriteBlockWithState(block, work.receipts, work.state) //尝试写入主区块链？
 			if err != nil {
 				log.Error("Failed writing block to chain", "err", err)
 				continue
@@ -483,6 +483,7 @@ func (self *worker) commitNewWork() { //多处调用，分别是哪几种情况�
 		delete(self.possibleUncles, hash)
 	}
 	// Create the new block to seal with the consensus engine
+	// 使用给定的状态来创建新的区块，Finalize会进行区块奖励等操作
 	if work.Block, err = self.engine.Finalize(self.chain, header, work.state, work.txs, uncles, work.receipts); err != nil {
 		log.Error("Failed to finalize block for sealing", "err", err)
 		return
