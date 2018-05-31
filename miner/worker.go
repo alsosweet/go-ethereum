@@ -466,7 +466,7 @@ func (self *worker) commitNewWork() { //多处调用，分别是哪几种情况�
 		badUncles []common.Hash
 	)
 	for hash, uncle := range self.possibleUncles {
-		if len(uncles) == 2 {
+		if len(uncles) == 2 { //为什么uncles等于2就break 黄皮书叔链验证(145) ∥B U ∥ ⩽ 2
 			break
 		}
 		if err := self.commitUncle(work, uncle.Header()); err != nil {
@@ -483,7 +483,7 @@ func (self *worker) commitNewWork() { //多处调用，分别是哪几种情况�
 		delete(self.possibleUncles, hash)
 	}
 	// Create the new block to seal with the consensus engine
-	// 使用给定的状态来创建新的区块，Finalize会进行区块奖励等操作 block rewards
+	// 使用给定的状态来创建新的区块，Finalize会进行区块奖励等操作 block rewards。上面uncles的统计，是为了分奖励吗
 	if work.Block, err = self.engine.Finalize(self.chain, header, work.state, work.txs, uncles, work.receipts); err != nil {
 		log.Error("Failed to finalize block for sealing", "err", err)
 		return
@@ -512,6 +512,7 @@ func (self *worker) commitUncle(work *Work, uncle *types.Header) error {
 	return nil
 }
 
+//这个的作用是什么
 func (self *worker) updateSnapshot() {
 	self.snapshotMu.Lock()
 	defer self.snapshotMu.Unlock()
