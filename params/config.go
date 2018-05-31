@@ -185,7 +185,7 @@ func (c *ChainConfig) IsEIP155(num *big.Int) bool {
 	return isForked(c.EIP155Block, num)
 }
 
-func (c *ChainConfig) IsEIP158(num *big.Int) bool {
+func (c *ChainConfig) IsEIP158(num *big.Int) bool { //EIP158 这个啥意思
 	return isForked(c.EIP158Block, num)
 }
 

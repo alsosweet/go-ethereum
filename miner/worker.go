@@ -329,7 +329,7 @@ func (self *worker) wait() {
 				events []interface{}
 				logs   = work.state.Logs()
 			)
-			events = append(events, core.ChainEvent{Block: block, Hash: block.Hash(), Logs: logs}) //接着看这两个events 5.24？？？
+			events = append(events, core.ChainEvent{Block: block, Hash: block.Hash(), Logs: logs}) //接着看这两个events,哪几个模块需要接收？
 			if stat == core.CanonStatTy {
 				events = append(events, core.ChainHeadEvent{Block: block})
 			}
