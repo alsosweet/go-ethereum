@@ -170,7 +170,7 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *par
 	if err != nil {
 		return nil, err
 	}
-	bc.genesisBlock = bc.GetBlockByNumber(0)
+	bc.genesisBlock = bc.GetBlockByNumber(0) //如果是加入公网，本地什么时候有block的数据。NewBlockChain是启动节点的时候调的
 	if bc.genesisBlock == nil {
 		return nil, ErrNoGenesis
 	}

@@ -311,7 +311,7 @@ func (self *worker) wait() {
 			for _, log := range work.state.Logs() {
 				log.BlockHash = block.Hash()
 			}
-			stat, err := self.chain.WriteBlockWithState(block, work.receipts, work.state) //尝试写入主区块链？
+			stat, err := self.chain.WriteBlockWithState(block, work.receipts, work.state) //将block和sate写入数据库，同时写入blocakchain?
 			if err != nil {
 				log.Error("Failed writing block to chain", "err", err)
 				continue
@@ -331,7 +331,7 @@ func (self *worker) wait() {
 			)
 			events = append(events, core.ChainEvent{Block: block, Hash: block.Hash(), Logs: logs}) //接着看这两个events,哪几个模块需要接收？
 			if stat == core.CanonStatTy {
-				events = append(events, core.ChainHeadEvent{Block: block})
+				events = append(events, core.ChainHeadEvent{Block: block}) //txpool会收到，同时reset txpool
 			}
 			self.chain.PostChainEvents(events, logs)
 
@@ -483,7 +483,7 @@ func (self *worker) commitNewWork() { //多处调用，分别是哪几种情况�
 		delete(self.possibleUncles, hash)
 	}
 	// Create the new block to seal with the consensus engine
-	// 使用给定的状态来创建新的区块，Finalize会进行区块奖励等操作
+	// 使用给定的状态来创建新的区块，Finalize会进行区块奖励等操作 block rewards
 	if work.Block, err = self.engine.Finalize(self.chain, header, work.state, work.txs, uncles, work.receipts); err != nil {
 		log.Error("Failed to finalize block for sealing", "err", err)
 		return

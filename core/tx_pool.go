@@ -286,7 +286,7 @@ func (pool *TxPool) loop() {
 				if pool.chainconfig.IsHomestead(ev.Block.Number()) {
 					pool.homestead = true
 				}
-				pool.reset(head.Header(), ev.Block.Header())
+				pool.reset(head.Header(), ev.Block.Header()) //移除已经包含在block的tx
 				head = ev.Block
 
 				pool.mu.Unlock()
@@ -315,7 +315,7 @@ func (pool *TxPool) loop() {
 				if pool.locals.contains(addr) {
 					continue
 				}
-				// Any non-locals old enough should be removed
+				// Any non-locals old enough should be removed 超过生命周期的remove
 				if time.Since(pool.beats[addr]) > pool.config.Lifetime {
 					for _, tx := range pool.queue[addr].Flatten() {
 						pool.removeTx(tx.Hash(), true)
@@ -417,7 +417,7 @@ func (pool *TxPool) reset(oldHead, newHead *types.Header) {
 	// any transactions that have been included in the block or
 	// have been invalidated because of another transaction (e.g.
 	// higher gas price)
-	pool.demoteUnexecutables()
+	pool.demoteUnexecutables() //已经添加到block的tx被移除
 
 	// Update all accounts to the latest known pending nonce
 	for addr, list := range pool.pending {
@@ -466,7 +466,7 @@ func (pool *TxPool) SetGasPrice(price *big.Int) {
 
 	pool.gasPrice = price
 	for _, tx := range pool.priced.Cap(price, pool.locals) {
-		pool.removeTx(tx.Hash(), false)
+		pool.removeTx(tx.Hash(), false) //提高gasprice，主动删除手续费低的
 	}
 	log.Info("Transaction pool price threshold updated", "price", price)
 }
@@ -628,7 +628,7 @@ func (pool *TxPool) add(tx *types.Transaction, local bool) (bool, error) {
 		for _, tx := range drop {
 			log.Trace("Discarding freshly underpriced transaction", "hash", tx.Hash(), "price", tx.GasPrice())
 			underpricedTxCounter.Inc(1)
-			pool.removeTx(tx.Hash(), false)
+			pool.removeTx(tx.Hash(), false) //交易池满，删除手续费低的
 		}
 	}
 	// If the transaction is replacing an already pending one, do directly
@@ -1076,7 +1076,7 @@ func (pool *TxPool) promoteExecutables(accounts []common.Address) {
 func (pool *TxPool) demoteUnexecutables() {
 	// Iterate over all accounts and demote any non-executable transactions
 	for addr, list := range pool.pending {
-		nonce := pool.currentState.GetNonce(addr)
+		nonce := pool.currentState.GetNonce(addr) //通过每个addr所记录的noce追溯
 
 		// Drop all transactions that are deemed too old (low nonce)
 		for _, tx := range list.Forward(nonce) {
